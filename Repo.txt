@@ -1,0 +1,258 @@
+@echo off
+:First
+title Loading...
+mkdir Luke\UnpackedIMG\system
+cls
+echo ---------
+echo Loading...
+echo ---------
+rename *.zip rom.zip
+bin\ping.exe 127.0.0.1 -n 2 >nul
+
+:Menu
+title LukeMIUI Creator 今天是 %date%
+cls&set "xz="
+cls
+echo ---------------------------------------------------------------
+echo 欢迎使用 LukeMIUI Creator (by Luke Jackson Bristot)
+echo ---------------------------------------------------------------
+echo 功能列表:
+echo ---------------------------------------------------------------
+echo 1.解压刷机包  
+echo.
+echo 2.转换 system.new.dat.br 至 system.new.dat  
+echo.
+echo 3.转换 system.new.dat 至 system.img  
+echo.
+echo 4.解压 system.img 
+echo.
+echo 5.替换官方包文件为LukeMIUI文件 
+echo.
+echo 6.全局 Deodex (暂未写)
+echo.
+echo 7.破解卡米 (暂未写)
+echo.
+echo 8.打包 System  (暂未写)
+echo.
+echo 9.system.img to system.new.dat  (暂未写)
+echo.
+echo a.清理工作目录
+echo.
+echo b.一键制作   
+echo.
+echo c.下包  
+echo.
+echo d.退出程序
+echo.
+set /p xz=请输入对应数字/字母后回车确认：
+if /i "%xz%"=="1" goto :unpackROM
+if /i "%xz%"=="2" goto :unpackSystemBr
+if /i "%xz%"=="3" goto :unpackSystemDat
+if /i "%xz%"=="4" goto :unpackSystemIMG
+if /i "%xz%"=="5" goto :changeFiles
+if /i "%xz%"=="6" goto :deodex
+if /i "%xz%"=="7" goto :kami
+if /i "%xz%"=="8" goto :packSystem
+if /i "%xz%"=="9" goto :sysimgtosysdat
+if /i "%xz%"=="10" goto :packSystem
+if /i "%xz%"=="A" goto :cleanFiles
+if /i "%xz%"=="B" goto :onekey
+if /i "%xz%"=="C" goto :download
+if /i "%xz%"=="D" goto :exit
+goto Menu
+
+:download
+cls
+bin\aria2\aria2c.exe -i download.txt
+echo ---------
+echo 下载完毕！
+echo ---------
+pause
+goto Menu
+
+:onekey
+cls
+echo ---------
+echo 开始解压刷机包....
+echo ---------
+bin\7z x rom.zip -oLuke\
+echo ---------
+echo 解压完毕
+echo ---------
+bin\ping.exe 127.0.0.1 -n 3 >nul
+cls
+echo ---------
+echo 开始转换br....
+echo ---------
+bin\brotli.exe -d  Luke\system.new.dat.br
+echo ---------
+echo 转换完毕
+echo ---------
+bin\ping.exe 127.0.0.1 -n 3 >nul
+cls
+echo ---------
+echo 开始转换dat....
+echo ---------
+bin\sdat2img.py Luke\system.transfer.list Luke\system.new.dat Luke\system.img
+del Luke\system.transfer.list >nul 2>nul
+del Luke\system.new.dat >nul 2>nul
+echo ---------
+echo 转换完毕
+echo ---------
+bin\ping.exe 127.0.0.1 -n 3 >nul
+cls
+echo ---------
+echo 开始解压system.img....
+echo ---------
+move Luke\system.img system.img >nul 2>nul
+bin\unpack_system.exe unpack -f "system.img" >nul 2>nul
+bin\sed\sed.exe -i "s\0x40000040\18253611072\g" fs_config_system
+bin\sed\sed.exe -i "s\0xc0\192\g" fs_config_system
+bin\sed\sed.exe -i "s\0x800000\8388608\g" fs_config_system
+bin\sed\sed.exe -i "s\0x1c0\448\g" fs_config_system
+bin\sed\sed.exe -i "s\0x1400\68719481856\g" fs_config_system
+bin\sed\sed.exe -i "s\0x3000\12288\g" fs_config_system
+bin\sed\sed.exe -i "s\0x1000\68719480832\g" fs_config_system
+bin\sed\sed.exe -i "s\0x13000\77824\g" fs_config_system
+bin\sed\sed.exe -i "s\0x400\1024\g" fs_config_system
+bin\sed\sed.exe -i "s\imsrcsd 1000 1001 0755 capabilities=0x0\imsrcsd 1000 1001 0755 capabilities=34359738368\g" fs_config_system
+bin\sed\sed.exe -i "s\wcnss_filter 1002 1002 0755 capabilities=0x0\wcnss_filter 1002 1002 0755 capabilities=68719476736\g" fs_config_system
+bin\sed\sed.exe -i "s\bootstat 1000 1007 0550 capabilities=0x0\bootstat 1000 1007 0550 capabilities=17179869184\g" fs_config_system
+move /y "fs_config_system" "bin\fs_config\" >nul 2>nul
+move /y "symlinks_system" "bin\fs_config\" >nul 2>nul
+move system\* Luke\UnpackedIMG\system
+move system.img Luke\
+echo ---------
+echo 解压完毕
+echo ---------
+bin\ping.exe 127.0.0.1 -n 3 >nul
+cls
+echo ---------
+echo 开始替换文件....
+echo ---------
+copy bin\system\priv-app\MiuiSystemUI\ Luke\Unpacked\system\system\system\priv-app\MiuiSystemUI\
+copy bin\system\media\theme\default\ Luke\Unpacked\system\system\system\media\theme\default\
+copy bin\system\fonts Luke\Unpacked\system\system\system\fonts
+echo ---------
+echo 替换完毕
+echo ---------
+bin\ping.exe 127.0.0.1 -n 3 >nul
+cls
+echo ---------
+echo 开始更改刷机脚本....
+echo ---------
+copy "bin\updater-script" "Luke\META-INF\com\google\android\updater-script"
+echo ---------
+echo 更改完毕
+echo ---------
+bin\ping.exe 127.0.0.1 -n 3 >nul
+cls
+echo ---------
+echo All Done!
+echo ---------
+pause
+cls
+goto Menu
+
+:cleanFiles
+cls
+rd /s /q system\
+rd /s /q Luke
+rd /s /q Luke\Unpacked
+
+:packSystem
+echo ---------
+echo  (暂未写)
+echo ---------
+pause
+cls
+goto Menu
+
+:changeupdater-script
+cls
+copy "bin\updater-script" "Luke\META-INF\com\google\android\updater-script"
+echo ---------
+echo 更改完毕
+echo ---------
+pause
+cls
+goto Menu
+
+:unpackROM
+cls
+bin\7z x rom.zip -oLuke
+echo ---------
+echo 解压完毕
+echo ---------
+pause
+cls
+goto Menu
+
+:unpackSystemBr
+cls
+bin\brotli.exe -d  Luke\system.new.dat.br
+echo ---------
+echo 解压完毕
+echo ---------
+pause
+cls
+goto Menu
+
+:unpackSystemDat
+cls
+bin\sdat2img.py Luke\system.transfer.list Luke\system.new.dat Luke\system.img
+del Luke\system.transfer.list >nul 2>nul
+del Luke\system.new.dat >nul 2>nul
+echo ---------
+echo 转换完毕
+echo ---------
+pause
+cls
+goto Menu
+
+:changeFiles
+cls
+copy bin\system\priv-app\MiuiSystemUI\ Luke\UnpackIMG\system\system\system\priv-app\MiuiSystemUI\
+copy bin\system\media\theme\default\  Luke\UnpackIMG\system\system\system\media\theme\default\
+copy bin\system\fonts  Luke\UnpackIMG\system\system\system\fonts
+echo ---------
+echo 替换完毕
+echo ---------
+pause
+cls
+goto Menu
+
+:unpackSystemIMG
+cls
+move Luke\system.img system.img >nul 2>nul
+bin\unpack_system.exe unpack -f "system.img" >nul 2>nul
+bin\sed\sed.exe -i "s\0x40000040\18253611072\g" fs_config_system
+bin\sed\sed.exe -i "s\0xc0\192\g" fs_config_system
+bin\sed\sed.exe -i "s\0x800000\8388608\g" fs_config_system
+bin\sed\sed.exe -i "s\0x1c0\448\g" fs_config_system
+bin\sed\sed.exe -i "s\0x1400\68719481856\g" fs_config_system
+bin\sed\sed.exe -i "s\0x3000\12288\g" fs_config_system
+bin\sed\sed.exe -i "s\0x1000\68719480832\g" fs_config_system
+bin\sed\sed.exe -i "s\0x13000\77824\g" fs_config_system
+bin\sed\sed.exe -i "s\0x400\1024\g" fs_config_system
+bin\sed\sed.exe -i "s\imsrcsd 1000 1001 0755 capabilities=0x0\imsrcsd 1000 1001 0755 capabilities=34359738368\g" fs_config_system
+bin\sed\sed.exe -i "s\wcnss_filter 1002 1002 0755 capabilities=0x0\wcnss_filter 1002 1002 0755 capabilities=68719476736\g" fs_config_system
+bin\sed\sed.exe -i "s\bootstat 1000 1007 0550 capabilities=0x0\bootstat 1000 1007 0550 capabilities=17179869184\g" fs_config_system
+move /y "fs_config_system" "bin\fs_config\" >nul 2>nul
+move /y "symlinks_system" "bin\fs_config\" >nul 2>nul
+move system Luke\Unpacked\system
+move system.img Luke\
+echo ---------
+echo 解压完毕
+echo ---------
+pause
+cls
+goto Menu
+
+:End
+cls
+pause
+
+:exit
+exit
+pause
