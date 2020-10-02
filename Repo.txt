@@ -1,7 +1,7 @@
 @echo off
 :First
 title Loading...
-mkdir Luke\UnpackedIMG\system
+mkdir Roald\UnpackedIMG\system
 cls
 echo ---------
 echo Loading...
@@ -10,11 +10,11 @@ rename *.zip rom.zip
 bin\ping.exe 127.0.0.1 -n 2 >nul
 
 :Menu
-title LukeMIUI Creator 今天是 %date%
+title RoaldMIUI Creator 今天是 %date%
 cls&set "xz="
 cls
 echo ---------------------------------------------------------------
-echo 欢迎使用 LukeMIUI Creator (by Luke Jackson Bristot)
+echo 欢迎使用 RoaldMIUI Creator (by 老韩)
 echo ---------------------------------------------------------------
 echo 功能列表:
 echo ---------------------------------------------------------------
